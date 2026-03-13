@@ -12,11 +12,13 @@ interface AppContextType {
   sheetUrl: string;
   isAdmin: boolean;
   appMetadata: { name: string; logo: string; favicon: string };
+  columnMappings: Record<string, string>; // platform -> startColumn
   login: () => void;
   logout: () => void;
   adminLogin: (user: string, pass: string) => boolean;
   adminLogout: () => void;
   updateAppMetadata: (metadata: { name: string; logo: string; favicon: string }) => void;
+  updateColumnMapping: (platform: string, startColumn: string) => void;
   setSpreadsheetUrl: (url: string) => void;
 }
 
@@ -32,7 +34,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [appMetadata, setAppMetadata] = useState<{ name: string; logo: string; favicon: string }>(
     JSON.parse(localStorage.getItem('app_metadata') || '{"name": "Arunika App", "logo": "", "favicon": ""}')
   );
+  const [columnMappings, setColumnMappings] = useState<Record<string, string>>(
+    JSON.parse(localStorage.getItem('column_mappings') || '{"instagram": "J", "tiktok": "J", "linkedin": "J"}')
+  );
   const [tokenClient, setTokenClient] = useState<any>(null);
+
+  // ... (useEffect, login, logout, adminLogin, adminLogout, updateAppMetadata remain same)
+
+  const updateColumnMapping = (platform: string, startColumn: string) => {
+    const newMappings = { ...columnMappings, [platform]: startColumn };
+    setColumnMappings(newMappings);
+    localStorage.setItem('column_mappings', JSON.stringify(newMappings));
+  };
 
   useEffect(() => {
     // Initialize Google Token Client when the script loads
@@ -107,7 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ token, spreadsheetId, sheetUrl, isAdmin, appMetadata, login, logout, adminLogin, adminLogout, updateAppMetadata, setSpreadsheetUrl: handleSetSpreadsheetUrl }}>
+    <AppContext.Provider value={{ token, spreadsheetId, sheetUrl, isAdmin, appMetadata, columnMappings, login, logout, adminLogin, adminLogout, updateAppMetadata, updateColumnMapping, setSpreadsheetUrl: handleSetSpreadsheetUrl }}>
       {children}
     </AppContext.Provider>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext';
 import { CheckCircle2, AlertCircle, LogOut, LogIn, Link as LinkIcon, Shield, Settings as SettingsIcon } from 'lucide-react';
 
 export function Settings() {
-  const { token, spreadsheetId, sheetUrl, setSpreadsheetUrl, login, logout, isAdmin, appMetadata, adminLogin, adminLogout, updateAppMetadata } = useApp();
+  const { token, spreadsheetId, sheetUrl, setSpreadsheetUrl, login, logout, isAdmin, appMetadata, adminLogin, adminLogout, updateAppMetadata, columnMappings, updateColumnMapping } = useApp();
   const [adminUser, setAdminUser] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [metadata, setMetadata] = useState(appMetadata);
@@ -134,14 +134,29 @@ export function Settings() {
               </div>
               <div>
                 <h3 className="font-medium text-xl leading-tight mb-1">App Configuration</h3>
-                <p className="text-sm font-medium text-muted-foreground">Ubah branding aplikasi</p>
+                <p className="text-sm font-medium text-muted-foreground">Ubah branding & mapping sheet</p>
               </div>
             </div>
-            <div className="space-y-4">
-              <Input label="App Name" value={metadata.name} onChange={(e) => setMetadata({...metadata, name: e.target.value})} />
-              <Input label="Logo URL" value={metadata.logo} onChange={(e) => setMetadata({...metadata, logo: e.target.value})} />
-              <Input label="Favicon URL" value={metadata.favicon} onChange={(e) => setMetadata({...metadata, favicon: e.target.value})} />
-              <Button onClick={() => updateAppMetadata(metadata)} className="w-full">Save Metadata</Button>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <Input label="App Name" value={metadata.name} onChange={(e) => setMetadata({...metadata, name: e.target.value})} />
+                <Input label="Logo URL" value={metadata.logo} onChange={(e) => setMetadata({...metadata, logo: e.target.value})} />
+                <Input label="Favicon URL" value={metadata.favicon} onChange={(e) => setMetadata({...metadata, favicon: e.target.value})} />
+                <Button onClick={() => updateAppMetadata(metadata)} className="w-full">Save Branding</Button>
+              </div>
+              
+              <div className="border-t border-border pt-6 space-y-4">
+                <h4 className="font-medium">Column Mappings (Start Column)</h4>
+                {Object.entries(columnMappings).map(([platform, startColumn]) => (
+                  <div key={platform} className="flex gap-2 items-end">
+                    <Input 
+                      label={platform.charAt(0).toUpperCase() + platform.slice(1)} 
+                      value={startColumn} 
+                      onChange={(e) => updateColumnMapping(platform, e.target.value.toUpperCase())} 
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </Card>
         )}

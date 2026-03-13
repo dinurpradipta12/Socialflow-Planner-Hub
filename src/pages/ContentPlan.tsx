@@ -21,12 +21,15 @@ const PLATFORMS = [
 ];
 
 export function ContentPlan() {
-  const { token, spreadsheetId } = useApp();
+  const { token, spreadsheetId, columnMappings } = useApp();
   const [activePlatform, setActivePlatform] = useState('instagram');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activePlatformData = PLATFORMS.find(p => p.id === activePlatform);
+  const startColumn = columnMappings[activePlatform] || 'A';
+  const numColumns = 12; // Tanggal to Folder Link
+  const endColumn = String.fromCharCode(startColumn.charCodeAt(0) + numColumns - 1);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,19 +53,16 @@ export function ContentPlan() {
       formData.get('content_type'),
       formData.get('headline'),
       formData.get('script_link'),
+      "", // Approval
       formData.get('image_link'),
       formData.get('pic_production'),
-      formData.get('folder_link'),
-      formData.get('posting_link')
+      formData.get('folder_link')
     ];
 
     try {
-      const range = `${activePlatformData?.sheetName}!A:L`;
-      console.log('DEBUG: Sending to Spreadsheet ID:', spreadsheetId);
-      console.log('DEBUG: Range:', range);
-      console.log('DEBUG: Data:', rowData);
+      const range = `${activePlatformData?.sheetName}!${startColumn}:${endColumn}`;
       await appendToSheet(token, spreadsheetId, range, [rowData]);
-      alert(`Konten berhasil ditambahkan ke Google Sheets!\n\nSpreadsheet ID: ${spreadsheetId}\nRange: ${range}\nData: ${JSON.stringify(rowData)}`);
+      alert('Konten berhasil ditambahkan ke Google Sheets!');
       setIsFormOpen(false);
     } catch (error: any) {
       if (error.message?.includes('Unable to parse range') || error.message?.includes('cannot be found')) {

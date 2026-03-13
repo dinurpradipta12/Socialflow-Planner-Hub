@@ -1,24 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw, X } from 'lucide-react';
 
 export function UpdateNotification() {
   const [hasUpdate, setHasUpdate] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  const currentHtmlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    let currentHtml = '';
-
     const checkForUpdates = async () => {
       try {
         // Fetch the root HTML file with a cache-busting query param
         const res = await fetch(`/?t=${Date.now()}`);
         const html = await res.text();
         
-        if (!currentHtml) {
+        if (currentHtmlRef.current === null) {
           // First load, store the current HTML signature
-          currentHtml = html;
-        } else if (currentHtml !== html) {
+          currentHtmlRef.current = html;
+        } else if (currentHtmlRef.current !== html) {
           // HTML changed (new build deployed), trigger update notification
           setHasUpdate(true);
         }
@@ -29,6 +28,7 @@ export function UpdateNotification() {
 
     // Check for updates every 1 minute
     const interval = setInterval(checkForUpdates, 60000);
+    checkForUpdates(); // Initial check
     return () => clearInterval(interval);
   }, []);
 
