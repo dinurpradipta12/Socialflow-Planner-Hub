@@ -27,9 +27,12 @@ export function ContentPlan() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activePlatformData = PLATFORMS.find(p => p.id === activePlatform);
-  const startColumn = columnMappings[activePlatform] || 'A';
+  const rawStart = columnMappings[activePlatform] || 'A';
+  const startColumn = rawStart.replace(/[^A-Za-z]/g, '');
+  const startRow = rawStart.replace(/[^0-9]/g, '') || '1';
   const numColumns = 12; // Tanggal to Folder Link
   const endColumn = String.fromCharCode(startColumn.charCodeAt(0) + numColumns - 1);
+  const range = `${activePlatformData?.sheetName}!${startColumn}${startRow}:${endColumn}`;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,7 +63,6 @@ export function ContentPlan() {
     ];
 
     try {
-      const range = `${activePlatformData?.sheetName}!${startColumn}:${endColumn}`;
       await appendToSheet(token, spreadsheetId, range, [rowData]);
       alert('Konten berhasil ditambahkan ke Google Sheets!');
       setIsFormOpen(false);
