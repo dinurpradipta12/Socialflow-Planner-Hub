@@ -27,12 +27,7 @@ export function ContentPlan() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activePlatformData = PLATFORMS.find(p => p.id === activePlatform);
-  const rawStart = columnMappings[activePlatform] || 'A';
-  const startColumn = rawStart.replace(/[^A-Za-z]/g, '');
-  const startRow = rawStart.replace(/[^0-9]/g, '') || '1';
-  const numColumns = 12; // Tanggal to Folder Link
-  const endColumn = String.fromCharCode(startColumn.charCodeAt(0) + numColumns - 1);
-  const range = `${activePlatformData?.sheetName}!${startColumn}${startRow}:${endColumn}`;
+  const platformMappings = columnMappings[activePlatform] || {};
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,22 +40,40 @@ export function ContentPlan() {
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     
-    // Urutan kolom sesuai permintaan:
-    // Tanggal Posting, Status Content, PIC Utama, Content Value, Objective, Content Type, Headline Content, Content Development Script, Post Image Final, PIC Production, Link Folder, Posting Link
-    const rowData = [
-      formData.get('tanggal'),
-      formData.get('status'),
-      formData.get('pic_utama'),
-      formData.get('content_value'),
-      formData.get('objective'),
-      formData.get('content_type'),
-      formData.get('headline'),
-      formData.get('script_link'),
-      "", // Approval
-      formData.get('image_link'),
-      formData.get('pic_production'),
-      formData.get('folder_link')
-    ];
+    // Mapping field to column
+    const fieldToColumn: Record<string, string> = {
+      tanggal: platformMappings.tanggal || 'J',
+      status: platformMappings.status || 'K',
+      pic_utama: platformMappings.pic_utama || 'L',
+      content_value: platformMappings.content_value || 'M',
+      objective: platformMappings.objective || 'N',
+      content_type: platformMappings.content_type || 'O',
+      headline: platformMappings.headline || 'P',
+      script_link: platformMappings.script_link || 'Q',
+      image_link: platformMappings.image_link || 'S',
+      pic_production: platformMappings.pic_production || 'T',
+      folder_link: platformMappings.folder_link || 'U',
+      posting_link: platformMappings.posting_link || 'V',
+    };
+
+    // Find the range based on the min and max columns
+    const columns = Object.values(fieldToColumn).map(c => c.replace(/[^A-Za-z]/g, ''));
+    const minCol = columns.reduce((a, b) => a < b ? a : b);
+    const maxCol = columns.reduce((a, b) => a > b ? a : b);
+    
+    // Find the row number from the first mapping (assuming all start at same row)
+    const firstMapping = Object.values(fieldToColumn)[0];
+    const startRow = firstMapping.replace(/[^0-9]/g, '') || '11';
+
+    const range = `${activePlatformData?.sheetName}!${minCol}${startRow}:${maxCol}`;
+
+    // Prepare row data based on the columns
+    const rowData = new Array(maxCol.charCodeAt(0) - minCol.charCodeAt(0) + 1).fill("");
+    
+    Object.entries(fieldToColumn).forEach(([field, col]) => {
+      const colIndex = col.replace(/[^A-Za-z]/g, '').charCodeAt(0) - minCol.charCodeAt(0);
+      rowData[colIndex] = formData.get(field) || "";
+    });
 
     try {
       await appendToSheet(token, spreadsheetId, range, [rowData]);

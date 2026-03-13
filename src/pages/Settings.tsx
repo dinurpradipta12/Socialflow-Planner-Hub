@@ -5,6 +5,21 @@ import { Input } from '../components/ui/Input';
 import { useApp } from '../context/AppContext';
 import { CheckCircle2, AlertCircle, LogOut, LogIn, Link as LinkIcon, Shield, Settings as SettingsIcon } from 'lucide-react';
 
+const FIELDS = [
+  { id: 'tanggal', label: 'Tanggal Posting' },
+  { id: 'status', label: 'Status Content' },
+  { id: 'pic_utama', label: 'PIC Utama' },
+  { id: 'content_value', label: 'Content Value' },
+  { id: 'objective', label: 'Objective' },
+  { id: 'content_type', label: 'Content Type' },
+  { id: 'headline', label: 'Headline Content' },
+  { id: 'script_link', label: 'Content Development Script' },
+  { id: 'image_link', label: 'Post Image Final' },
+  { id: 'pic_production', label: 'PIC Production' },
+  { id: 'folder_link', label: 'Link Folder' },
+  { id: 'posting_link', label: 'Posting Link' },
+];
+
 export function Settings() {
   const { token, spreadsheetId, sheetUrl, setSpreadsheetUrl, login, logout, isAdmin, appMetadata, adminLogin, adminLogout, updateAppMetadata, columnMappings, updateColumnMapping } = useApp();
   const [adminUser, setAdminUser] = useState('');
@@ -145,15 +160,21 @@ export function Settings() {
                 <Button onClick={() => updateAppMetadata(metadata)} className="w-full">Save Branding</Button>
               </div>
               
-              <div className="border-t border-border pt-6 space-y-4">
-                <h4 className="font-medium">Column Mappings (Start Column)</h4>
-                {Object.entries(columnMappings).map(([platform, startColumn]) => (
-                  <div key={platform} className="flex gap-2 items-end">
-                    <Input 
-                      label={platform.charAt(0).toUpperCase() + platform.slice(1)} 
-                      value={startColumn} 
-                      onChange={(e) => updateColumnMapping(platform, e.target.value.toUpperCase())} 
-                    />
+              <div className="border-t border-border pt-6 space-y-8">
+                <h4 className="font-medium">Column Mappings</h4>
+                {['instagram', 'tiktok', 'linkedin'].map((platform) => (
+                  <div key={platform} className="space-y-4">
+                    <h5 className="font-medium text-sm text-accent capitalize">{platform}</h5>
+                    <div className="grid grid-cols-2 gap-4">
+                      {FIELDS.map((field) => (
+                        <Input 
+                          key={field.id}
+                          label={field.label} 
+                          value={columnMappings[platform]?.[field.id] || ''} 
+                          onChange={(e) => updateColumnMapping(platform, field.id, e.target.value.toUpperCase())} 
+                        />
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

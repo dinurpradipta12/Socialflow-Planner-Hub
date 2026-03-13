@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { ContentPlan } from './pages/ContentPlan';
 import { Analytics } from './pages/Analytics';
 import { Settings as SettingsPage } from './pages/Settings';
+import { DevAnalytics } from './pages/DevAnalytics';
 import { UpdateNotification } from './components/UpdateNotification';
-import { CalendarDays, BarChartBig, Settings } from 'lucide-react';
+import { CalendarDays, BarChartBig, Settings, Terminal } from 'lucide-react';
+import { useApp } from './context/AppContext';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'plan' | 'analytics' | 'settings'>('plan');
+  const [activeTab, setActiveTab] = useState<'plan' | 'analytics' | 'settings' | 'dev'>('plan');
+  const { isAdmin } = useApp();
 
   return (
     <div className="min-h-screen bg-background relative selection:bg-accent/20 selection:text-accent">
@@ -17,6 +20,7 @@ export default function App() {
         {activeTab === 'plan' && <ContentPlan />}
         {activeTab === 'analytics' && <Analytics />}
         {activeTab === 'settings' && <SettingsPage />}
+        {activeTab === 'dev' && isAdmin && <DevAnalytics />}
       </main>
 
       {/* Bottom Navigation */}
@@ -37,6 +41,16 @@ export default function App() {
             <BarChartBig className={`w-5 h-5 mb-1 ${activeTab === 'analytics' ? 'animate-pulse-slow' : ''}`} />
             <span className="text-[10px] font-medium tracking-wide">Analytics</span>
           </button>
+
+          {isAdmin && (
+            <button 
+              onClick={() => setActiveTab('dev')}
+              className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-xl transition-all duration-300 ${activeTab === 'dev' ? 'bg-accent/10 text-accent' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+            >
+              <Terminal className={`w-5 h-5 mb-1 ${activeTab === 'dev' ? 'animate-pulse-slow' : ''}`} />
+              <span className="text-[10px] font-medium tracking-wide">Dev</span>
+            </button>
+          )}
 
           <button 
             onClick={() => setActiveTab('settings')}

@@ -12,13 +12,13 @@ interface AppContextType {
   sheetUrl: string;
   isAdmin: boolean;
   appMetadata: { name: string; logo: string; favicon: string };
-  columnMappings: Record<string, string>; // platform -> startColumn
+  columnMappings: Record<string, Record<string, string>>; // platform -> field -> column
   login: () => void;
   logout: () => void;
   adminLogin: (user: string, pass: string) => boolean;
   adminLogout: () => void;
   updateAppMetadata: (metadata: { name: string; logo: string; favicon: string }) => void;
-  updateColumnMapping: (platform: string, startColumn: string) => void;
+  updateColumnMapping: (platform: string, field: string, column: string) => void;
   setSpreadsheetUrl: (url: string) => void;
 }
 
@@ -34,15 +34,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [appMetadata, setAppMetadata] = useState<{ name: string; logo: string; favicon: string }>(
     JSON.parse(localStorage.getItem('app_metadata') || '{"name": "Arunika App", "logo": "", "favicon": ""}')
   );
-  const [columnMappings, setColumnMappings] = useState<Record<string, string>>(
-    JSON.parse(localStorage.getItem('column_mappings') || '{"instagram": "J", "tiktok": "J", "linkedin": "J"}')
+  const [columnMappings, setColumnMappings] = useState<Record<string, Record<string, string>>>(
+    JSON.parse(localStorage.getItem('column_mappings') || '{}')
   );
   const [tokenClient, setTokenClient] = useState<any>(null);
 
   // ... (useEffect, login, logout, adminLogin, adminLogout, updateAppMetadata remain same)
 
-  const updateColumnMapping = (platform: string, startColumn: string) => {
-    const newMappings = { ...columnMappings, [platform]: startColumn };
+  const updateColumnMapping = (platform: string, field: string, column: string) => {
+    const newMappings = { 
+      ...columnMappings, 
+      [platform]: { 
+        ...(columnMappings[platform] || {}), 
+        [field]: column 
+      } 
+    };
     setColumnMappings(newMappings);
     localStorage.setItem('column_mappings', JSON.stringify(newMappings));
   };
