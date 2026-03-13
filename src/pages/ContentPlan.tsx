@@ -58,8 +58,11 @@ export function ContentPlan() {
 
     try {
       const range = `${activePlatformData?.sheetName}!A:L`;
+      console.log('DEBUG: Sending to Spreadsheet ID:', spreadsheetId);
+      console.log('DEBUG: Range:', range);
+      console.log('DEBUG: Data:', rowData);
       await appendToSheet(token, spreadsheetId, range, [rowData]);
-      alert('Konten berhasil ditambahkan ke Google Sheets!');
+      alert(`Konten berhasil ditambahkan ke Google Sheets!\n\nSpreadsheet ID: ${spreadsheetId}\nRange: ${range}\nData: ${JSON.stringify(rowData)}`);
       setIsFormOpen(false);
     } catch (error: any) {
       if (error.message?.includes('Unable to parse range') || error.message?.includes('cannot be found')) {
